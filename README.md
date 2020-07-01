@@ -7,7 +7,7 @@ Envelope waveform is output by inputting key on/off signal to trigger parameter.
 
 ![](./images/waveform.png)
 
-[Live Demo](./test.html)
+[Live Demo](https://g200kg.github.io/audioworklet-adsrnode/test.html)
 
 ## Output
 The output is the ADSR curve triggered by the 'trigger' parameter.  
@@ -51,6 +51,6 @@ Create `AdsrNode` by :
 Initialize options are also available. For examples :  
 `adsr = new AdsrNode(audioContext, {attack:0.5, attackcurve:0, decay:0.2, sustain:0.1, release:0.8});`
 
-See **[livedemo](./test.html)** for the actual behavior
+See **[livedemo](https://g200kg.github.io/audioworklet-adsrnode/test.html)** for the actual behavior
 ![livedemo](./images/livedemo.png)
 
