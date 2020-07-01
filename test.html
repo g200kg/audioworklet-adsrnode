@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+
+<script src="./audioworklet-adsrnode.js"></script>
+
+<script>
+
+var actx, osc, gain, adsr, ana;
+
+async function Start(){
+  actx = new AudioContext();
+  await AdsrNode.Initialize(actx);
+
+  osc = new OscillatorNode(actx);
+  gain = new GainNode(actx);
+  adsr = new AdsrNode(actx);
+  ana = new AnalyserNode(actx);
+
+  document.getElementById("attack").addEventListener("input", (event)=>{document.getElementById("attackval").innerText = adsr.attack.value = event.target.value;});
+  document.getElementById("attackcurve").addEventListener("input", (event)=>{document.getElementById("attackcurveval").innerText = adsr.attackcurve.value = event.target.value;});
+  document.getElementById("decay").addEventListener("input", (event)=>{document.getElementById("decayval").innerText = adsr.decay.value = event.target.value;});
+  document.getElementById("sustain").addEventListener("input", (event)=>{document.getElementById("sustainval").innerText = adsr.sustain.value = event.target.value;});
+  document.getElementById("release").addEventListener("input", (event)=>{document.getElementById("releaseval").innerText = adsr.release.value = event.target.value;});
+
+  osc.connect(gain).connect(actx.destination);
+  gain.gain.value=0;
+  adsr.connect(gain.gain);
+  adsr.connect(ana);
+  osc.start();
+  const ctls=document.getElementsByTagName("input");
+  for(elm of ctls){
+    elm.dispatchEvent(new Event("input"));
+  }
+}
+function trigger(active){
+  actx.resume();
+  if(active)
+    index = 0;
+  adsr.trigger.value = active;
+}
+
+document.addEventListener("mouseup", ()=>{trigger(0)});
+setInterval(Draw, 10);
+
+window.addEventListener("load", Start);
+
+//------------------------------------------
+// Draw Envelope graph
+var index=512;
+var dat = new Float32Array(128);
+function Draw(){
+  if(index<512){
+    ana.getFloatTimeDomainData(dat);
+    var val = dat[0] * 200;
+    var ctx = document.getElementById("canvas").getContext("2d");
+    ctx.fillStyle="#000";
+    ctx.fillRect(index, 256, 1, -256);
+    ctx.fillStyle="#0f0";
+    ctx.fillRect(index, 256-28, 1, -val);
+    ctx.fillStyle="#ff0";
+    ctx.fillRect(index+1, 256, 1, -256);
+    ++index;
+  }
+}
+
+</script>
+</head>
+<body>
+  <h1>AdsrNode Demo</h1>
+  <canvas id="canvas" width="512" height="256" style="background:#000"></canvas>
+<table>
+<tr><td>Attack</td><td><input id="attack" type="range" value="0.1" min="0" max="1" step="0.01"/></td><td id="attackval"></td></tr>
+<tr><td>AttackCurve</td><td><input id="attackcurve" type="range" value="0" min="0" max="1" step="0.01"/></td><td id="attackcurveval"></td></tr>
+<tr><td>Decay</td><td><input id="decay" type="range" value="0.1" min="0" max="1" step="0.01" /></td><td id="decayval"></td></tr>
+<tr><td>Sustain</td><td><input id="sustain" type="range" value="0.5" min="0" max="1" step="0.01" /></td><td id="sustainval"></td></tr>
+<tr><td>Release</td><td><input id="release" type="range" value="0.3" min="0" max="1" step="0.01" /></td><td id="releaseval"></td></tr>
+</table>
+<button onmousedown="trigger(1)">trigger</button>
+</body>
+</html>  
